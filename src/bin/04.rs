@@ -40,14 +40,15 @@ pub fn part_one(input: &str) -> Option<u32> {
 
                     match char_option {
                         Some(char) => {
-                            if let Some(xmas_char) = xmas_chars.get(char_index) {
-                                if char != xmas_char {
-                                    is_xmas = false;
-                                    break;
-                                }
+                            if *char != xmas_chars[char_index] {
+                                is_xmas = false;
+                                break;
                             }
                         }
-                        None => break,
+                        None => {
+                            is_xmas = false;
+                            break;
+                        }
                     }
                 }
 
