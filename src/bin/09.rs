@@ -5,37 +5,7 @@ advent_of_code::solution!(9);
 enum Block {
     Free,
     /// Data block with id
-    Data(u64),
-}
-
-impl Display for Block {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let str = if let Block::Data(data_block) = self {
-            &data_block.to_string()
-        } else {
-            "."
-        };
-
-        write!(f, "{}", str)
-    }
-}
-
-/// 0 -> 0, 2 -> 1, 4 -> 2, 6 -> 3
-fn get_id(index: usize) -> u64 {
-    index as u64 / 2
-}
-
-fn has_gap(blocks: &[Block]) -> bool {
-    let mut met_free = false;
-    for block in blocks {
-        if let Block::Free = block {
-            met_free = true;
-        } else if met_free {
-            return true;
-        }
-    }
-
-    false
+    Data(u32),
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
@@ -46,7 +16,7 @@ pub fn part_one(input: &str) -> Option<u64> {
         if index % 2 == 0 {
             // even index(0, 2, 4, ...): data block
             for _ in 0..number {
-                blocks.push(Block::Data(get_id(index)));
+                blocks.push(Block::Data(index as u32 / 2));
             }
         } else {
             // odd index(1, 3, 5, ...): free space block
@@ -56,39 +26,27 @@ pub fn part_one(input: &str) -> Option<u64> {
         }
     }
 
+    let mut free_block_index = 0;
+    let mut data_block_index = blocks.len() - 1;
+
     loop {
-        if !has_gap(&blocks) {
+        while let Block::Data(_) = &blocks[free_block_index] {
+            free_block_index += 1;
+        }
+        while let Block::Free = &blocks[data_block_index] {
+            data_block_index -= 1;
+        }
+
+        if free_block_index >= data_block_index {
             break;
+        } else {
+            blocks.swap(free_block_index, data_block_index);
         }
-
-        // do
-        // find from backwards
-        let mut free_block_index = None;
-        for (index, _) in blocks.iter().enumerate() {
-            if let Block::Free = blocks[index] {
-                free_block_index = Some(index);
-                break;
-            }
-        }
-
-        let mut data_block_index = None;
-        for (i, _) in blocks.iter().enumerate() {
-            let index = blocks.len() - i - 1;
-            if let Block::Data(_) = blocks[index] {
-                data_block_index = Some(index);
-                break;
-            }
-        }
-
-        blocks.swap(
-            free_block_index.expect("Free block index is None"),
-            data_block_index.expect("Data block index is None"),
-        );
     }
 
     Some(blocks.iter().enumerate().fold(0, |acc, (index, block)| {
         acc + match block {
-            Block::Data(data_block) => index as u64 * data_block,
+            Block::Data(data_block) => index as u64 * *data_block as u64,
             Block::Free => 0,
         }
     }))
