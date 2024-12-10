@@ -10,7 +10,6 @@ pub fn part_one(input: &str) -> Option<u32> {
     let mut count = 0;
 
     let xmas = "XMAS";
-    let xmas_chars: Vec<_> = xmas.chars().collect();
 
     let directions = [
         Direction { x: 0, y: 1 },
@@ -30,9 +29,10 @@ pub fn part_one(input: &str) -> Option<u32> {
                 let col_index = direction.x;
                 let mut is_xmas = true;
 
-                for char_index in 0..xmas.len() {
-                    let row_offset = row as i32 + row_index * char_index as i32;
-                    let col_offset = col as i32 + col_index * char_index as i32;
+                // for char_index in 0..xmas.len() {
+                for (xmas_char_index, xmas_char) in xmas.chars().enumerate() {
+                    let row_offset = row as i32 + row_index * xmas_char_index as i32;
+                    let col_offset = col as i32 + col_index * xmas_char_index as i32;
 
                     let char_option = grid
                         .get(row_offset as usize)
@@ -40,7 +40,7 @@ pub fn part_one(input: &str) -> Option<u32> {
 
                     match char_option {
                         Some(char) => {
-                            if *char != xmas_chars[char_index] {
+                            if *char != xmas_char {
                                 is_xmas = false;
                                 break;
                             }
@@ -62,7 +62,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(count)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(_input: &str) -> Option<u32> {
     None
 }
 
