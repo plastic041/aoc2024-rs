@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 advent_of_code::solution!(9);
 
 enum Block {
