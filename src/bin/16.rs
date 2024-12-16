@@ -2,7 +2,6 @@ use glam::IVec2;
 use std::{
     cmp::Reverse,
     collections::{BinaryHeap, HashMap},
-    net::Ipv6Addr,
 };
 
 advent_of_code::solution!(16);
@@ -72,32 +71,6 @@ enum Dir {
     Down,
 }
 
-fn draw(grid: &[Vec<Cell>], visited: &HashMap<IVec2, u32>) {
-    grid.iter().enumerate().for_each(|(y, row)| {
-        row.iter().enumerate().for_each(|(x, cell)| {
-            if visited.get(&IVec2::new(x as i32, y as i32)).is_some() {
-                print!(".");
-            } else {
-                match cell {
-                    Cell::Empty => print!(" "),
-                    Cell::Wall => print!("#"),
-                }
-            }
-        });
-        println!();
-    });
-    println!();
-    println!();
-}
-
-fn calculate_cost(from_dir: &Dir, to_dir: &Dir) -> u32 {
-    if from_dir == to_dir {
-        1001
-    } else {
-        1
-    }
-}
-
 fn pathfinding(grid: &[Vec<Cell>], from: IVec2, to: IVec2) -> Option<u32> {
     let mut queue = BinaryHeap::new();
     queue.push(Reverse((0, from.x, from.y, Dir::Right)));
@@ -165,7 +138,7 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(3022));
     }
 
     #[test]
