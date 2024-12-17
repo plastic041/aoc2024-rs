@@ -6,15 +6,15 @@ advent_of_code::solution!(13);
 
 #[derive(Debug)]
 struct Button {
-    x: u128,
-    y: u128,
+    x: u64,
+    y: u64,
 }
 
 #[derive(Debug)]
 struct Game {
     a: Button,
     b: Button,
-    prize: (u128, u128),
+    prize: (u64, u64),
 }
 
 impl Button {
@@ -23,8 +23,8 @@ impl Button {
         let captures = re.captures(input).unwrap();
 
         Button {
-            x: captures.get(1).unwrap().as_str().parse::<u128>().unwrap(),
-            y: captures.get(2).unwrap().as_str().parse::<u128>().unwrap(),
+            x: captures.get(1).unwrap().as_str().parse::<u64>().unwrap(),
+            y: captures.get(2).unwrap().as_str().parse::<u64>().unwrap(),
         }
     }
 }
@@ -48,11 +48,11 @@ impl Game {
         Game { a, b, prize }
     }
 
-    fn _min_cost(&self) -> Option<u128> {
+    fn _min_cost(&self) -> Option<u64> {
         let mut queue = BinaryHeap::new();
         queue.push(Reverse((0, 0, 0)));
 
-        let mut visited: HashMap<(u128, u128), u128> = HashMap::new();
+        let mut visited: HashMap<(u64, u64), u64> = HashMap::new();
         visited.insert((0, 0), 0);
 
         while let Some(Reverse((cost, x, y))) = queue.pop() {
@@ -97,7 +97,7 @@ impl Game {
     }
 }
 
-fn parse_prize(input: &str) -> (u128, u128) {
+fn parse_prize(input: &str) -> (u64, u64) {
     let re = Regex::new(r"X=([\d]+), Y=([\d]+)").unwrap();
     let captures = re.captures(input).unwrap();
 
@@ -107,26 +107,23 @@ fn parse_prize(input: &str) -> (u128, u128) {
     )
 }
 
-fn parse_prize2(input: &str) -> (u128, u128) {
+fn parse_prize2(input: &str) -> (u64, u64) {
     let re = Regex::new(r"X=([\d]+), Y=([\d]+)").unwrap();
     let captures = re.captures(input).unwrap();
 
     (
-        captures.get(1).unwrap().as_str().parse::<u128>().unwrap() + 10000000000000,
-        captures.get(2).unwrap().as_str().parse::<u128>().unwrap() + 10000000000000,
+        captures.get(1).unwrap().as_str().parse::<u64>().unwrap() + 10000000000000,
+        captures.get(2).unwrap().as_str().parse::<u64>().unwrap() + 10000000000000,
     )
 }
 
-pub fn part_one(input: &str) -> Option<u128> {
+pub fn part_one(input: &str) -> Option<u64> {
     let games: Vec<Game> = input.split("\n\n").map(Game::parse).collect();
 
     Some(
         games
             .iter()
             .filter_map(|game| {
-                // 94a + 22b = 8400 => x
-                // 34a + 67b = 5400 => y
-
                 let determinant = (game.a.x * game.b.y).abs_diff(game.a.y * game.b.x);
 
                 if determinant == 0 {
@@ -146,20 +143,17 @@ pub fn part_one(input: &str) -> Option<u128> {
                 }
             })
             .map(|(x, y)| x * 3 + y)
-            .sum::<u128>(),
+            .sum::<u64>(),
     )
 }
 
-pub fn part_two(input: &str) -> Option<u128> {
+pub fn part_two(input: &str) -> Option<u64> {
     let games: Vec<Game> = input.split("\n\n").map(Game::parse2).collect();
 
     Some(
         games
             .iter()
             .filter_map(|game| {
-                // 94a + 22b = 8400 => x
-                // 34a + 67b = 5400 => y
-
                 let determinant = (game.a.x * game.b.y).abs_diff(game.a.y * game.b.x);
 
                 if determinant == 0 {
@@ -179,7 +173,7 @@ pub fn part_two(input: &str) -> Option<u128> {
                 }
             })
             .map(|(x, y)| x * 3 + y)
-            .sum::<u128>(),
+            .sum::<u64>(),
     )
 }
 
@@ -196,6 +190,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(875318608908));
     }
 }
