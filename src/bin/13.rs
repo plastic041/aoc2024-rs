@@ -1,4 +1,3 @@
-#![allow(unused_variables)]
 use regex::Regex;
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap};
@@ -7,15 +6,15 @@ advent_of_code::solution!(13);
 
 #[derive(Debug)]
 struct Button {
-    x: u64,
-    y: u64,
+    x: u128,
+    y: u128,
 }
 
 #[derive(Debug)]
 struct Game {
     a: Button,
     b: Button,
-    prize: (u64, u64),
+    prize: (u128, u128),
 }
 
 impl Button {
@@ -24,8 +23,8 @@ impl Button {
         let captures = re.captures(input).unwrap();
 
         Button {
-            x: captures.get(1).unwrap().as_str().parse::<u64>().unwrap(),
-            y: captures.get(2).unwrap().as_str().parse::<u64>().unwrap(),
+            x: captures.get(1).unwrap().as_str().parse::<u128>().unwrap(),
+            y: captures.get(2).unwrap().as_str().parse::<u128>().unwrap(),
         }
     }
 }
@@ -49,15 +48,16 @@ impl Game {
         Game { a, b, prize }
     }
 
-    fn min_cost(&self) -> Option<u64> {
+    fn min_cost(&self) -> Option<u128> {
         let mut queue = BinaryHeap::new();
         queue.push(Reverse((0, 0, 0)));
 
-        let mut visited: HashMap<(u64, u64), u64> = HashMap::new();
+        let mut visited: HashMap<(u128, u128), u128> = HashMap::new();
         visited.insert((0, 0), 0);
 
         while let Some(Reverse((cost, x, y))) = queue.pop() {
             if (x, y) == self.prize {
+                println!("{}: {}, {}", cost, x, y);
                 return Some(cost);
             }
 
@@ -97,40 +97,90 @@ impl Game {
     }
 }
 
-fn parse_prize(input: &str) -> (u64, u64) {
+fn parse_prize(input: &str) -> (u128, u128) {
     let re = Regex::new(r"X=([\d]+), Y=([\d]+)").unwrap();
     let captures = re.captures(input).unwrap();
 
     (
-        captures.get(1).unwrap().as_str().parse::<u64>().unwrap(),
-        captures.get(2).unwrap().as_str().parse::<u64>().unwrap(),
+        captures.get(1).unwrap().as_str().parse().unwrap(),
+        captures.get(2).unwrap().as_str().parse().unwrap(),
     )
 }
 
-fn parse_prize2(input: &str) -> (u64, u64) {
+fn parse_prize2(input: &str) -> (u128, u128) {
     let re = Regex::new(r"X=([\d]+), Y=([\d]+)").unwrap();
     let captures = re.captures(input).unwrap();
 
     (
-        captures.get(1).unwrap().as_str().parse::<u64>().unwrap() + 10000000000000,
-        captures.get(2).unwrap().as_str().parse::<u64>().unwrap() + 10000000000000,
+        captures.get(1).unwrap().as_str().parse::<u128>().unwrap() + 10000000000000,
+        captures.get(2).unwrap().as_str().parse::<u128>().unwrap() + 10000000000000,
     )
 }
 
-pub fn part_one(input: &str) -> Option<u64> {
+pub fn part_one(input: &str) -> Option<u128> {
     let games: Vec<Game> = input.split("\n\n").map(Game::parse).collect();
 
-    Some(games.iter().filter_map(Game::min_cost).sum::<u64>())
+    Some(
+        games
+            .iter()
+            .filter_map(|game| {
+                // 94a + 22b = 8400 => x
+                // 34a + 67b = 5400 => y
+
+                let determinant = (game.a.x * game.b.y).abs_diff(game.a.y * game.b.x);
+
+                if determinant == 0 {
+                    None
+                } else {
+                    let xfirst = (game.prize.0 * game.b.y).abs_diff(game.prize.1 * game.b.x);
+                    let yfirst = (game.a.x * game.prize.1).abs_diff(game.a.y * game.prize.0);
+
+                    let (x, xrem) = (xfirst / determinant, xfirst % determinant);
+                    let (y, yrem) = (yfirst / determinant, yfirst % determinant);
+
+                    if xrem == 0 && yrem == 0 {
+                        Some((x, y))
+                    } else {
+                        None
+                    }
+                }
+            })
+            .map(|(x, y)| x * 3 + y)
+            .sum::<u128>(),
+    )
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
+pub fn part_two(input: &str) -> Option<u128> {
     let games: Vec<Game> = input.split("\n\n").map(Game::parse2).collect();
 
-    // Some(games.iter().filter_map(Game::min_cost).sum::<u64>());
+    Some(
+        games
+            .iter()
+            .filter_map(|game| {
+                // 94a + 22b = 8400 => x
+                // 34a + 67b = 5400 => y
 
-    //TAKES FOREVER
+                let determinant = (game.a.x * game.b.y).abs_diff(game.a.y * game.b.x);
 
-    None
+                if determinant == 0 {
+                    None
+                } else {
+                    let xfirst = (game.prize.0 * game.b.y).abs_diff(game.prize.1 * game.b.x);
+                    let yfirst = (game.a.x * game.prize.1).abs_diff(game.a.y * game.prize.0);
+
+                    let (x, xrem) = (xfirst / determinant, xfirst % determinant);
+                    let (y, yrem) = (yfirst / determinant, yfirst % determinant);
+
+                    if xrem == 0 && yrem == 0 {
+                        Some((x, y))
+                    } else {
+                        None
+                    }
+                }
+            })
+            .map(|(x, y)| x * 3 + y)
+            .sum::<u128>(),
+    )
 }
 
 #[cfg(test)]
