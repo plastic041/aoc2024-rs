@@ -169,7 +169,7 @@ pub fn part_two(input: &str) -> Option<usize> {
         .parse()
         .unwrap();
 
-    let program: Vec<usize> = programs.split(": ").collect::<Vec<_>>()[1]
+    let program: Vec<u8> = programs.split(": ").collect::<Vec<_>>()[1]
         .split(",")
         .map(|s| s.parse().unwrap())
         .collect();
@@ -181,7 +181,7 @@ pub fn part_two(input: &str) -> Option<usize> {
         let mut reg_b = reg_b_def;
         let mut reg_c = reg_c_def;
 
-        let mut outputs = Vec::with_capacity(program.len());
+        let mut outputs: Vec<u8> = Vec::with_capacity(program.len());
 
         while let Some(opcode) = program.get(pointer) {
             if pointer + 1 >= program.len() {
@@ -206,7 +206,7 @@ pub fn part_two(input: &str) -> Option<usize> {
                     pointer += 2;
                 }
                 1 => {
-                    reg_b ^= program[pointer + 1];
+                    reg_b ^= program[pointer + 1] as usize;
 
                     pointer += 2;
                 }
@@ -230,7 +230,7 @@ pub fn part_two(input: &str) -> Option<usize> {
                     if reg_a == 0 {
                         pointer += 2;
                     } else {
-                        pointer = program[pointer + 1];
+                        pointer = program[pointer + 1] as usize;
                     }
                 }
                 4 => {
@@ -250,7 +250,7 @@ pub fn part_two(input: &str) -> Option<usize> {
                         6 => reg_c,
                         _ => panic!("invalid combo"),
                     };
-                    outputs.push(combo_value % 8);
+                    outputs.push((combo_value % 8) as u8);
 
                     pointer += 2;
                 }
@@ -302,7 +302,7 @@ pub fn part_two(input: &str) -> Option<usize> {
     }
 }
 
-fn check_pos(output: &[usize], program: &[usize]) -> usize {
+fn check_pos(output: &[u8], program: &[u8]) -> usize {
     if output.len() == program.len() {
         for i in 0..program.len() {
             let pos = program.len() - i - 1;
