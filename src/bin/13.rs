@@ -48,7 +48,7 @@ impl Game {
         Game { a, b, prize }
     }
 
-    fn min_cost(&self) -> Option<u128> {
+    fn _min_cost(&self) -> Option<u128> {
         let mut queue = BinaryHeap::new();
         queue.push(Reverse((0, 0, 0)));
 
