@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use glam::UVec2;
-use itertools::{enumerate, Itertools};
 use pathfinding::prelude::bfs;
 
 advent_of_code::solution!(20);
@@ -64,14 +63,6 @@ pub fn part_one(input: &str) -> Option<u32> {
             .map(|(_, count)| *count)
             .sum(),
     )
-    // let  counts = map.iter().collect::<Vec<_>>();
-
-    // counts.sort_unstable_by(|a, b| b.0.cmp(a.0));
-    // counts.iter().for_each(|&(pico, count)| {
-    //     println!("count: {}, pico: {}", count, without_cheat - pico);
-    // });
-
-    // None
 }
 
 fn solve(track: &[Vec<Cell>], start: &UVec2, goal: &UVec2, cheat: &UVec2) -> Option<usize> {
@@ -106,17 +97,7 @@ fn solve(track: &[Vec<Cell>], start: &UVec2, goal: &UVec2, cheat: &UVec2) -> Opt
     solution.map(|s| s.len() - 1) // minus start
 }
 
-fn is_neighbors(a: &UVec2, b: &UVec2) -> bool {
-    if a == b {
-        false
-    } else {
-        let diffx = a.x.abs_diff(b.x);
-        let diffy = a.y.abs_diff(b.y);
-        diffx + diffy == 1
-    }
-}
-
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(_input: &str) -> Option<u32> {
     None
 }
 
@@ -125,22 +106,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_neighbors() {
-        let a = UVec2::new(1, 0);
-        let b = UVec2::new(0, 1);
-
-        assert!(!is_neighbors(&a, &b));
-
-        let c = UVec2::new(1, 0);
-        let d = UVec2::new(0, 0);
-
-        assert!(is_neighbors(&c, &d));
-    }
-
-    #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(0));
     }
 
     #[test]
