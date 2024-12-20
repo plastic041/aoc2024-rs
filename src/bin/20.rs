@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-
 use glam::UVec2;
+use itertools::Itertools;
 use pathfinding::prelude::bfs;
+use std::collections::HashMap;
 
 advent_of_code::solution!(20);
 
@@ -44,12 +44,12 @@ pub fn part_one(input: &str) -> Option<u32> {
     let start = start.unwrap();
     let goal = goal.unwrap();
 
-    let without_cheat = solve(&track, &start, &goal, &UVec2::new(0, 0)).unwrap();
+    let cheatless_route = solve(&track, &start, &goal, &UVec2::new(0, 0)).unwrap();
 
     let mut map: HashMap<usize, u32> = HashMap::new();
 
     walls.iter().for_each(|wall| {
-        let result = solve(&track, &start, &goal, wall).unwrap();
+        let result = solve(&track, &start, &goal, wall).unwrap().len();
         let value = map.get(&result);
         match value {
             Some(n) => map.insert(result, n + 1),
@@ -59,46 +59,97 @@ pub fn part_one(input: &str) -> Option<u32> {
 
     Some(
         map.iter()
-            .filter(|&(pico, _)| without_cheat - pico >= 100)
+            .filter(|&(pico, _)| cheatless_route.len() - pico >= 100)
             .map(|(_, count)| *count)
             .sum(),
     )
 }
 
-fn solve(track: &[Vec<Cell>], start: &UVec2, goal: &UVec2, cheat: &UVec2) -> Option<usize> {
-    let solution = bfs(
-        &(start.x, start.y),
-        |&(x, y)| {
+fn solve(track: &[Vec<Cell>], start: &UVec2, goal: &UVec2, cheat: &UVec2) -> Option<Vec<UVec2>> {
+    bfs(
+        start,
+        |&position| {
             [
-                (x + 1, y),
-                (x.wrapping_sub(1), y),
-                (x, y + 1),
-                (x, y.wrapping_sub(1)),
+                position.wrapping_add(UVec2::X),
+                position.wrapping_sub(UVec2::X),
+                position.wrapping_add(UVec2::Y),
+                position.wrapping_sub(UVec2::Y),
             ]
-            .iter()
-            .filter(|&(x, y)| {
+            .into_iter()
+            .filter(|&position| {
                 track
-                    .get(*y as usize)
-                    .and_then(|row| row.get(*x as usize))
+                    .get(position.y as usize)
+                    .and_then(|row| row.get(position.x as usize))
                     .map_or(false, |c| {
-                        if cheat.x == *x && cheat.y == *y {
+                        if cheat.x == position.x && cheat.y == position.y {
                             true
                         } else {
                             matches!(*c, Cell::Empty)
                         }
                     })
             })
-            .map(|&(x, y)| (x, y))
-            .collect::<Vec<_>>()
+            .collect::<Vec<UVec2>>()
         },
-        |&p| p.0 == goal.x && p.1 == goal.y,
-    );
-
-    solution.map(|s| s.len() - 1) // minus start
+        |position| position == goal,
+    )
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let mut start: Option<UVec2> = None;
+    let mut goal: Option<UVec2> = None;
+
+    let track: Vec<Vec<Cell>> = input
+        .lines()
+        .enumerate()
+        .map(|(y, line)| {
+            line.chars()
+                .enumerate()
+                .map(|(x, c)| match c {
+                    '#' => Cell::Wall,
+                    'S' => {
+                        start = Some(UVec2::new(x as u32, y as u32));
+                        Cell::Empty
+                    }
+                    'E' => {
+                        goal = Some(UVec2::new(x as u32, y as u32));
+                        Cell::Empty
+                    }
+                    _ => Cell::Empty,
+                })
+                .collect()
+        })
+        .collect();
+
+    let start = start.unwrap();
+    let goal = goal.unwrap();
+
+    let cheatless_route = solve(&track, &start, &goal, &UVec2::new(0, 0)).unwrap();
+
+    let mut map: HashMap<usize, u32> = HashMap::new();
+    cheatless_route
+        .iter()
+        .enumerate()
+        .tuple_combinations()
+        .for_each(|((from_index, from_position), (to_index, to_position))| {
+            let m_distance = (to_position.as_ivec2() - from_position.as_ivec2())
+                .abs()
+                .element_sum() as usize;
+            if m_distance <= 20 {
+                let result = from_index + m_distance + cheatless_route.len() - to_index;
+                let value = map.get(&result);
+                match value {
+                    Some(n) => map.insert(result, n + 1),
+                    None => map.insert(result, 1),
+                };
+            }
+        });
+
+    Some(
+        map.iter()
+            .filter(|&(pico, _)| cheatless_route.len() - pico >= 100)
+            .map(|(_, count)| *count)
+            .sum(),
+    )
 }
 
 #[cfg(test)]
@@ -114,6 +165,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(0));
     }
 }
